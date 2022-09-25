@@ -1,0 +1,21 @@
+{
+  "GEOMETRY": [
+    "Angles",
+    "Triangles",
+    "Angle-Side Relations",
+    "Angles",
+    "Triangles",
+    "Angle-Side Relations",
+    "Numbers",
+    "Rational",
+    "Exponential",
+    "Complex",
+    "Numbers",
+    "Rational",
+    "Exponential",
+    "Complex"
+  ],
+  "MATH1": ["Numbers", "Rational", "Exponential", "Complex"],
+  "MATH2": ["Numbers", "Rational", "Exponential", "Complex"],
+  "IQ": ["Numbers", "Rational", "Exponential", "Complex"]
+}

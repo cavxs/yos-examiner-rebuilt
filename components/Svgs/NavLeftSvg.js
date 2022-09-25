@@ -1,0 +1,12 @@
+import { SvgXml } from "react-native-svg";
+
+export default svgComp = ({ style }) => {
+  const svgMarkup = `<svg width="30" height="40" viewBox="0 0 33 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="25.7143" height="3.42857" rx="1.71429" fill="#404053"/>
+    <rect y="10.2857" width="32.5714" height="3.42857" rx="1.71429" fill="#404053"/>
+    <rect y="20.5714" width="18.8571" height="3.42857" rx="1.71429" fill="#404053"/>
+    </svg>
+    `;
+
+  return <SvgXml style={style} xml={svgMarkup} />;
+};
