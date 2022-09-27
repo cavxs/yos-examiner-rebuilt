@@ -35,30 +35,43 @@ const NavBar = () => {
         duration: 400,
         useNativeDriver: true,
       }).start();
+    } else {
+      Animated.timing(navBarTranslateY, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
     }
   }, [examMode]);
+
+  useEffect(() => {
+    switch (selectedScreen) {
+      case NavBarScreens.HomeScreen:
+        navUp(false);
+        break;
+      case NavBarScreens.PencilScreen:
+        navUp(true);
+        break;
+    }
+  }, [selectedScreen]);
 
   useEffect(() => {
     navBarHeight.setValue(50);
   }, []);
 
-  const navUp = () => {
+  const navUp = (val) => {
+    const to = val == true ? WINDOW_HEIGHT - 40 : 50;
     Animated.spring(navBarHeight, {
-      toValue: WINDOW_HEIGHT - 40,
+      toValue: to,
       duration: 400,
       bounciness: 4,
       useNativeDriver: false,
     }).start();
-    setNavUpMisin(true);
+    setNavUpMisin(val);
   };
 
-  const navDown = () => {
-    Animated.timing(navBarHeight, {
-      toValue: 50,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-    setNavUpMisin(false);
+  const goToScreen = (navBarScreen) => {
+    setSelectedScreen(navBarScreen);
   };
 
   return (
@@ -116,7 +129,6 @@ const NavBar = () => {
             style={{ marginTop: -40 }}
             onPress={() => {
               setSelectedScreen(NavBarScreens.PencilScreen);
-              navUp();
             }}
           >
             <PencilSvg
@@ -132,7 +144,6 @@ const NavBar = () => {
             style={{ marginTop: -40 }}
             onPress={() => {
               setSelectedScreen(NavBarScreens.HomeScreen);
-              navDown();
             }}
           >
             <HomeSvg
@@ -149,7 +160,7 @@ const NavBar = () => {
 
         {selectedScreen == NavBarScreens.PencilScreen ||
         selectedScreen == NavBarScreens.OptionsScreen ? (
-          <NavBarOutlet setExamMode={setExamMode} />
+          <NavBarOutlet goToScreen={goToScreen} setExamMode={setExamMode} />
         ) : null}
       </Animated.View>
     </View>

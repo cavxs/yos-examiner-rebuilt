@@ -7,12 +7,22 @@ import AvailableTopics from "../../available_topics.json";
 
 import TopicButton from "../TopicButton";
 
-const TopicSelectionPage = ({ selectedSubject, selectTopic1 }) => {
+import s3 from "../../api/AWSclient";
+
+const TopicSelectionPage = ({ selectedSubject, selectTopic1, setExamData }) => {
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const headerTranslateY = useRef(new Animated.Value(0)).current;
   const flatListTranslateY = useRef(new Animated.Value(0)).current;
 
   const [flatListScroll, setFlatListScroll] = useState(0);
+  const [availableTopics, setAVTL] = useState([]);
+
+  useEffect(() => {
+    s3.getAvailableTopics("Puza", selectedSubject, (data) => {
+      console.log(data);
+      setAVTL(data);
+    });
+  }, []);
 
   const selectTopicF = (topic) => {
     Animated.timing(headerTranslateY, {
@@ -26,6 +36,9 @@ const TopicSelectionPage = ({ selectedSubject, selectTopic1 }) => {
       useNativeDriver: true,
     }).start();
     selectTopic1(topic);
+    s3.getQuestionsFromTopic(selectedSubject, topic, 5, [1, 1], (data) => {
+      setExamData(data);
+    });
   };
 
   useEffect(() => {
@@ -61,23 +74,25 @@ const TopicSelectionPage = ({ selectedSubject, selectTopic1 }) => {
           : null}
       </Animated.Text>
 
-      <Animated.FlatList
-        data={AvailableTopics[selectedSubject]}
-        style={{
-          marginTop: 30,
-          paddingBottom: 20,
-          transform: [{ translateY: flatListTranslateY }],
-        }}
-        onScroll={(e) => setFlatListScroll(e.nativeEvent.contentOffset.y)}
-        renderItem={(t) => (
-          <TopicButton
-            scroll={flatListScroll}
-            subject={selectedSubject}
-            selectTopic1={selectTopicF}
-            topic={t}
-          />
-        )}
-      />
+      {availableTopics.length ? (
+        <Animated.FlatList
+          data={availableTopics}
+          style={{
+            marginTop: 30,
+            paddingBottom: 20,
+            transform: [{ translateY: flatListTranslateY }],
+          }}
+          onScroll={(e) => setFlatListScroll(e.nativeEvent.contentOffset.y)}
+          renderItem={(t) => (
+            <TopicButton
+              scroll={flatListScroll}
+              subject={selectedSubject}
+              selectTopic1={selectTopicF}
+              topic={t}
+            />
+          )}
+        />
+      ) : null}
     </View>
   );
 };
