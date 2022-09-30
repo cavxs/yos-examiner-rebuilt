@@ -24,12 +24,11 @@ const NavBar = () => {
   const [selectedScreen, setSelectedScreen] = useState(
     NavBarScreens.HomeScreen
   );
-  const [examMode, setExamMode] = useState(false);
-  const [navUpMisin, setNavUpMisin] = useState(false);
+  const [navUpMisin, setNavUpMisin] = useState(false); // for the padding up of the three buttons (to fix when they look like shit when the nav moves up)
 
-  useEffect(() => {
-    if (examMode) {
-      // Move the nav up and show the ---
+  const navBarHidden = (val) => {
+    // Navbar is the three buttons, it is hidden during the exam
+    if (val) {
       Animated.timing(navBarTranslateY, {
         toValue: -200,
         duration: 400,
@@ -42,7 +41,7 @@ const NavBar = () => {
         useNativeDriver: true,
       }).start();
     }
-  }, [examMode]);
+  };
 
   useEffect(() => {
     switch (selectedScreen) {
@@ -103,7 +102,7 @@ const NavBar = () => {
           // elevation: 10,
         }}
       >
-        <Image
+        <Image // this is the nav bar from the top
           source={navBarImg}
           style={{
             position: "absolute",
@@ -160,7 +159,7 @@ const NavBar = () => {
 
         {selectedScreen == NavBarScreens.PencilScreen ||
         selectedScreen == NavBarScreens.OptionsScreen ? (
-          <NavBarOutlet goToScreen={goToScreen} setExamMode={setExamMode} />
+          <NavBarOutlet goToScreen={goToScreen} navBarHidden={navBarHidden} />
         ) : null}
       </Animated.View>
     </View>

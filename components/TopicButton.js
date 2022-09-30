@@ -6,7 +6,7 @@ import colors from "../colors";
 
 import { SubjectGradientValues } from "../constants";
 
-const TOPIC_NAME_MAX_LENGTH = 15;
+const TOPIC_NAME_MAX_LENGTH = 12;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -15,11 +15,14 @@ const TopicButton = ({
   subject,
   topic: { index, item },
   selectTopic1,
+  progress,
 }) => {
   const [animating, setAnimating] = useState(false);
   const translateX = useRef(new Animated.Value(0)).current;
 
   let startNotice = false;
+
+  console.log("progress", progress);
 
   useEffect(() => {
     startNotice = true;
@@ -120,7 +123,8 @@ const TopicButton = ({
                 color: "#ccc",
               }}
             >
-              274/460 solved
+              {progress ? progress[0] : "??"}/{progress ? progress[1] : "??"}{" "}
+              solved
             </Text>
             <Text
               style={{
@@ -129,7 +133,7 @@ const TopicButton = ({
                 color: "#ccc",
               }}
             >
-              50%
+              {progress ? Math.round((progress[0] / progress[1]) * 100) : "??"}%
             </Text>
           </View>
           <View
@@ -142,7 +146,9 @@ const TopicButton = ({
           >
             <View
               style={{
-                width: "50%",
+                width: progress
+                  ? Math.round((progress[0] / progress[1]) * 100)
+                  : "0" + "%",
                 height: "100%",
                 position: "absolute",
                 top: -10,

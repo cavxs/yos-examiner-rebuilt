@@ -3,6 +3,9 @@ import { useFonts } from "expo-font";
 
 import HomePage from "./components/pages/HomePage";
 import NavBar from "./components/NavBar";
+import { clearStorage } from "./api/storage";
+
+import CircularProgress from "react-native-circular-progress-indicator";
 
 export default function App() {
   const [loaded] = useFonts({
@@ -14,6 +17,8 @@ export default function App() {
   });
 
   if (!loaded) return null;
+
+  // clearStorage();
 
   return (
     <View style={styles.container}>

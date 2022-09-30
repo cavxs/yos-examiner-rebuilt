@@ -5,4 +5,5 @@ export default {
   fadingCircles: "rgba(239, 139, 111, 0.5)",
   green: "#7FD6AB",
   red: "#D67F7F",
+  purple: "#452D50",
 };

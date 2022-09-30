@@ -18,14 +18,16 @@ import { SubjectSelection } from "../../constants";
 
 const WINDOW_WIDTH = Dimensions.get("window").width;
 
+import colors from "../../colors";
+
 const SubjectSelectionPage = ({ selectSubject1 }) => {
   const selectTranslation = useRef(new Animated.Value(0)).current;
   const nonSelectedOpacity = useRef(new Animated.Value(0)).current;
   const [selectedSubject, setSelectedSubject] = useState(0);
 
-  useEffect(() => {
-    setSelectedSubject("");
-  }, []);
+  // useEffect(() => {
+  //   setSelectedSubject("");
+  // }, []);
 
   const selectSubject = (sub) => {
     if (!(selectedSubject == "")) return;
@@ -53,7 +55,9 @@ const SubjectSelectionPage = ({ selectSubject1 }) => {
 
   return (
     <>
-      <ScrollView style={{ flex: 1, paddingTop: 30 }}>
+      <ScrollView
+        style={{ flex: 1, paddingTop: 30, backgroundColor: colors.lightOrange }}
+      >
         <TouchableOpacity
           onPress={() => selectSubject(SubjectSelection.GeometryCard)}
           activeOpacity={0.7}

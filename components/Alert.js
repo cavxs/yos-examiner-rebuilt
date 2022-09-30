@@ -21,7 +21,7 @@ const Alert = ({ setAlerting, goHome }) => {
     >
       <View
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: "#FFF3E0",
           width: 320,
           height: 200,
           borderRadius: 20,
@@ -44,10 +44,11 @@ const Alert = ({ setAlerting, goHome }) => {
           style={{
             width: "80%",
             alignSelf: "center",
-            backgroundColor: colors.green,
+            backgroundColor: colors.purple,
             borderRadius: 50,
             height: 50,
             justifyContent: "center",
+            elevation: 10,
             marginTop: 30,
           }}
         >

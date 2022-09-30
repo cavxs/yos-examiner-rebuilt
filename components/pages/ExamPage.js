@@ -18,25 +18,35 @@ import btnA from "../../assets/appimages/answerbtns/btna.png";
 import btnB from "../../assets/appimages/answerbtns/btnb.png";
 import btnC from "../../assets/appimages/answerbtns/btnc.png";
 import btnD from "../../assets/appimages/answerbtns/btnd.png";
-import btnSkip from "../../assets/appimages/answerbtns/btnskip.png";
+import btne from "../../assets/appimages/answerbtns/btne.png";
 
 import NavLeftSvg from "../Svgs/NavLeftSvg";
 import { useEffect, useRef, useState } from "react";
 import Alert from "../Alert";
 
-const windowWidth = Dimensions.get("window").width;
+import { Canvas } from "@benjeau/react-native-draw";
+
+import {
+  setLastQuestionAt,
+  setSolvedQuestionNo,
+  getSolvedQNo,
+  setWrongQuestions,
+  getWrongQuestions,
+} from "../../api/storage";
 
 const ExamPage = ({ setExamResults, goHome, examData }) => {
   const progressWidth = useRef(new Animated.Value(0)).current;
   const bgColorChange = useRef(new Animated.Value(0)).current;
   const examOpacity = useRef(new Animated.Value(0)).current;
 
+  const canvasRef = useRef(null);
+
   const [quesAt, setQuesAt] = useState(0);
   const [bgColorer, setBgColorer] = useState(false);
   const [alerting, setAlerting] = useState(false);
   const [plrAnswerData, setPlrAnswerData] = useState({
     right: 0,
-    wrong: 0,
+    wrong: [],
     skipped: 0,
     data: [],
   });
@@ -54,16 +64,56 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
         useNativeDriver: false,
       }).start();
 
-      console.log(quesAt);
+      // console.log(quesAt);
       if (quesAt < totalQuestions) {
-        bgColorChange.setValue(0);
-        Animated.timing(bgColorChange, {
-          toValue: 100,
-          duration: 700,
-          useNativeDriver: false,
-        }).start();
+        // bgColorChange.setValue(0);
+        // Animated.timing(bgColorChange, {
+        //   toValue: 100,
+        //   duration: 700,
+        //   useNativeDriver: false,
+        // }).start();
       } else {
         // Exam finished
+
+        // set the last question solved to the current question
+        const objParams = [
+          "Puza",
+          examData[quesAt - 1].subject,
+          examData[quesAt - 1].topic,
+        ];
+        setLastQuestionAt(...objParams, examData[quesAt - 1].name);
+        getSolvedQNo(...objParams, (n) => {
+          let nx = n;
+          if (!nx) nx = 0;
+          console.log(
+            "setting solved question count from " +
+              n +
+              " to " +
+              (Number(nx) + plrAnswerData["right"]).toString()
+          );
+          setSolvedQuestionNo(
+            ...objParams,
+            (Number(nx) + plrAnswerData["right"]).toString(),
+            () => {
+              getSolvedQNo(...objParams, (fd) => {
+                console.log("yay", fd);
+              });
+            }
+          );
+        });
+        getWrongQuestions(...objParams, (oldWrongQ) => {
+          console.log("oldwrongq ", oldWrongQ);
+          if (oldWrongQ) {
+            const oldVal = JSON.parse(JSON.parse(oldWrongQ));
+            const newArr = oldVal.concat(plrAnswerData["wrong"]);
+            setWrongQuestions(...objParams, JSON.stringify(newArr));
+          } else {
+            setWrongQuestions(
+              ...objParams,
+              JSON.stringify(plrAnswerData["wrong"])
+            );
+          }
+        });
         Animated.timing(progressWidth, {
           toValue: 100,
           duration: 300,
@@ -88,13 +138,13 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
         setPlrAnswerData({
           ...plrAnswerData,
           right: plrAnswerData["right"] + 1,
-          data: [...plrAnswerData["data"], "R"],
+          data: [...plrAnswerData["data"], ans],
         });
       } else {
         setPlrAnswerData({
           ...plrAnswerData,
-          wrong: plrAnswerData["wrong"] + 1,
-          data: [...plrAnswerData["data"], "W"],
+          wrong: [...plrAnswerData["wrong"], examData[quesAt].name],
+          data: [...plrAnswerData["data"], ans],
         });
         setBgColorer("W");
       }
@@ -109,19 +159,6 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
     setQuesAt((old) => old + 1);
   };
 
-  const bgColorINT =
-    bgColorer == "R"
-      ? bgColorChange.interpolate({
-          inputRange: [0, 50, 100],
-          outputRange: ["#fff", "#7FD6AB", "#fff"],
-        })
-      : bgColorer == "W"
-      ? bgColorChange.interpolate({
-          inputRange: [0, 50, 100],
-          outputRange: ["#fff", colors.red, "#fff"],
-        })
-      : null;
-
   const progressWidthINT = progressWidth.interpolate({
     inputRange: [0, 100],
     outputRange: ["0%", "100%"],
@@ -133,7 +170,7 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
       {alerting ? <Alert goHome={goHome} setAlerting={setAlerting} /> : null}
       <Animated.View
         style={{
-          backgroundColor: bgColorINT,
+          backgroundColor: "#fff",
           flex: 1,
           marginTop: -85,
           paddingTop: 35,
@@ -228,24 +265,48 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
           />
         </View>
         <View style={{ width: "100%", height: "45%", marginTop: 10 }}>
+          <Canvas
+            ref={canvasRef}
+            color="#130f7d"
+            thickness={5}
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "115%",
+              zIndex: 2,
+              backgroundColor: "transparent",
+            }}
+          />
           <Image
             source={{ uri: examData[quesAt]?.ques }}
             style={{
               width: "100%",
               height: "100%",
-              resizeMode: "cover",
+              resizeMode: "contain",
             }}
           />
         </View>
-        <View style={{ marginTop: -45 }}>
-          <TouchableOpacity style={{ alignSelf: "flex-start" }}>
+        <View
+          style={{
+            marginTop: -45,
+            zIndex: 3,
+            alignSelf: "flex-start",
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => canvasRef.current.undo()}
+            style={{ alignSelf: "flex-start" }}
+          >
             <Image source={undobtn} />
           </TouchableOpacity>
-          <TouchableOpacity style={{ marginTop: -15, alignSelf: "flex-start" }}>
+          <TouchableOpacity
+            onPress={() => canvasRef.current.clear()}
+            style={{ marginTop: -15, alignSelf: "flex-start" }}
+          >
             <Image source={trashbtn} />
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1, marginTop: -15 }}>
+        <View style={{ flex: 1, marginTop: -15, zIndex: 5 }}>
           <View style={{ flexDirection: "row", width: "100%" }}>
             <TouchableOpacity
               style={{ flex: 0.5, alignItems: "center", marginRight: -20 }}
@@ -296,8 +357,8 @@ const ExamPage = ({ setExamResults, goHome, examData }) => {
             onPress={() => answer("E")}
           >
             <Image
-              source={btnSkip}
-              style={{ resizeMode: "contain", width: 360, marginTop: -40 }}
+              source={btne}
+              style={{ resizeMode: "contain", width: 190, marginTop: -40 }}
             />
           </TouchableOpacity>
         </View>

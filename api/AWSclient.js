@@ -9,11 +9,11 @@ AWS.config.update({
 s3 = new AWS.S3();
 
 const getAnswerData = (book, subject, topic, success) => {
-  console.log("YOS/" + book + "/" + subject + "/" + topic + "/answers");
   const objectParams = {
     Bucket: "yos-examination",
     Key: "YOS/" + book + "/" + subject + "/" + topic + "/answers",
   };
+  console.log(objectParams.Key);
   s3.getObject(objectParams, async (err, data) => {
     if (err) {
       console.log(err, err.stack);
@@ -29,6 +29,7 @@ const getAvailableTopics = (book, subject, success) => {
     Key: "YOS/" + book + "/" + subject + "/topics.tpc",
   };
   s3.getObject(objectParams, async (err, data) => {
+    console.log("received " + data.Body.toString("utf-8").split(/\r?\n/));
     if (err) {
       console.log(err, err.stack);
     } else {
@@ -117,12 +118,18 @@ const getQuestionsFromTopic = async (
   topic,
   no = 1,
   fromQues = [1, 1],
+  include = true,
   success
 ) => {
   const finalQuestions = [];
   // console.log()
   getAnswerData("Puza", subject, topic, async (ansData) => {
-    let ques = getQuesFromArray(fromQues, ansData);
+    let ques = null;
+    if (include) {
+      ques = getQuesFromArray(fromQues, ansData);
+    } else {
+      ques = getQuestionAfterTheQuestion(fromQues, ansData);
+    }
     for (let i = 0; i < no; i++) {
       if (!ques) break;
       const testQFormat =
@@ -144,6 +151,7 @@ const getQuestionsFromTopic = async (
             finalQuestions.push({
               subject: subject,
               topic: topic,
+              name: testQFormat.slice(0, -4),
               ques: "data:image/jpeg;base64," + imgdata,
               ans: ques.ans,
             });
@@ -154,6 +162,14 @@ const getQuestionsFromTopic = async (
       ques = getQuestionAfterTheQuestion(ques.ques, ansData);
     }
     success(finalQuestions);
+  });
+};
+
+const getNumberOfQuestionsInTopic = (subject, topic, success) => {
+  getAnswerData("Puza", subject, topic, async (ansData) => {
+    const answerTable = ansData.split(/\r?\n/);
+    const NoOfAllQuestions = ansData.length - (answerTable.length - 1) * 2;
+    success(NoOfAllQuestions);
   });
 };
 
@@ -202,4 +218,8 @@ const getQuestionsRTopics = async (Topics, No, success) => {
   success(finalQuestions);
 };
 
-export default s3client = { getQuestionsFromTopic, getAvailableTopics };
+export default s3client = {
+  getQuestionsFromTopic,
+  getAvailableTopics,
+  getNumberOfQuestionsInTopic,
+};

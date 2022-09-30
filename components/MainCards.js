@@ -223,9 +223,7 @@ const MainCards = () => {
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 0 }}
           style={style.card}
-        >
-          <Text>Hello</Text>
-        </LinearGradient>
+        ></LinearGradient>
         <View style={{ width: 50 }} />
       </ScrollView>
     </View>

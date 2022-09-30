@@ -9,9 +9,9 @@ import TopicSelectionPage from "./TopicSelectionPage";
 import ExamPage from "./ExamPage";
 import ExamResultsPage from "./ExamResultsPage";
 
-import { NavBarScreens } from "../../constants";
+import { NavBarScreens, shadowValues } from "../../constants";
 
-const NavBarOutlet = ({ setExamMode, goToScreen }) => {
+const NavBarOutlet = ({ navBarHidden, goToScreen }) => {
   const shadowHeight = useRef(new Animated.Value(0)).current;
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("");
@@ -22,17 +22,18 @@ const NavBarOutlet = ({ setExamMode, goToScreen }) => {
     shadowHeight.setValue(55);
   }, []);
   useEffect(() => {
-    if (selectedSubject.length) moveShadowDown();
+    if (selectedSubject.length) moveShadowTo(shadowValues.shadowDown); // on topic selection screen
     if (selectedTopic.length && !examResults) {
-      moveShadowUpExamMode();
-      setExamMode(true);
+      // on exam screen
+      moveShadowTo(shadowValues.shadowUpHidden); // hide the upside down nav bar to the top
+      navBarHidden(true);
     }
   }, [selectedSubject, selectedTopic]);
 
   useEffect(() => {
     if (examResults) {
-      moveShadowDown();
-      setExamMode(false);
+      moveShadowTo(shadowValues.shadowDown);
+      navBarHidden(false);
     }
   }, [examResults]);
 
@@ -40,30 +41,14 @@ const NavBarOutlet = ({ setExamMode, goToScreen }) => {
     setSelectedSubject("");
     setSelectedTopic("");
     setExamResults(null);
-    setExamMode(false);
+    navBarHidden(false);
     goToScreen(NavBarScreens.HomeScreen);
   };
 
-  const moveShadowDown = () => {
+  const moveShadowTo = (to) => {
     Animated.spring(shadowHeight, {
-      toValue: -15,
+      toValue: to,
       duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const moveShadowUpExamMode = () => {
-    Animated.timing(shadowHeight, {
-      toValue: 200,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const moveShadowDownExamMode = () => {
-    Animated.timing(shadowHeight, {
-      toValue: 55,
-      duration: 400,
       useNativeDriver: true,
     }).start();
   };
@@ -74,12 +59,11 @@ const NavBarOutlet = ({ setExamMode, goToScreen }) => {
         source={NavBarImg}
         style={{
           position: "absolute",
-          zIndex: 1,
           transform: [{ rotate: "180deg" }, { translateY: shadowHeight }],
           width: "100%",
           height: 120,
-          zIndex: 1,
           resizeMode: "stretch",
+          zIndex: 1,
         }}
       />
       {selectedSubject == "" ? (
@@ -97,7 +81,12 @@ const NavBarOutlet = ({ setExamMode, goToScreen }) => {
           setExamResults={setExamResults}
         />
       ) : (
-        <ExamResultsPage goHome={goHome} examResults={examResults} />
+        <ExamResultsPage
+          goHome={goHome}
+          examResults={examResults}
+          examData={examData}
+          moveShadowDown={moveShadowTo}
+        />
       )}
     </View>
   );
